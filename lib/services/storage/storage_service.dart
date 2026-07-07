@@ -16,6 +16,10 @@ class StorageService {
     await _box.put(_userKey, user.toMap());
   }
 
+  static Future<void> updateUser(UserModel user) async {
+  await _box.put(_userKey, user.toMap());
+}
+
   static UserModel? getUser() {
     final data = _box.get(_userKey);
 

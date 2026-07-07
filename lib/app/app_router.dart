@@ -2,6 +2,8 @@ import 'package:cheguei/screens/splash/splash_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cheguei/screens/auth/login_page.dart';
 import 'package:cheguei/screens/auth/register_page.dart';
+import 'package:cheguei/screens/profile/profile_page.dart';
+import 'package:cheguei/screens/home/home_page.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -37,6 +39,16 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.register,
         builder: (context, state) => const RegisterPage(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (context, state) => const ProfilePage(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.home,
+        builder: (context, state) => const HomePage(),
       ),
     ],
   );

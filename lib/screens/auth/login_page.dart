@@ -86,11 +86,13 @@ class _LoginPageState extends State<LoginPage> {
                         return;
                       }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      context.go(AppRoutes.profile);
+
+                      /*ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Login realizado com sucesso!'),
                         ),
-                      );
+                      );*/
 
                       // A navegação será implementada na próxima etapa.
                     },
