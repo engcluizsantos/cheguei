@@ -1,5 +1,5 @@
 name: cheguei
-description: "A new Flutter project."
+description: "Assistente Inteligente para Mobilidade Urbana"
 
 
 publish_to: 'none' 
@@ -45,3 +45,8 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
