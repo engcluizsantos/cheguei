@@ -86,7 +86,13 @@ class _LoginPageState extends State<LoginPage> {
                         return;
                       }
 
-                      context.go(AppRoutes.profile);
+                      //context.go(AppRoutes.profile);
+
+                      if (user.firstAccess) {
+                        context.go(AppRoutes.profile);
+                      } else {
+                        context.go(AppRoutes.home);
+                      }
 
                       /*ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

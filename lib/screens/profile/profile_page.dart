@@ -50,6 +50,33 @@ class _ProfilePageState extends State<ProfilePage> {
     needAccessibility = user!.needAccessibility;
   }
 
+  Future<void> saveProfile() async {
+    if (user == null) return;
+
+    final updatedUser = user!.copyWith(
+      name: nameController.text.trim(),
+      age: int.tryParse(ageController.text) ?? 0,
+
+      isElderly: isElderly,
+      isPregnant: isPregnant,
+      hasDisability: hasDisability,
+      reducedMobility: reducedMobility,
+
+      preferShortestTime: preferShortestTime,
+      preferLowestCost: preferLowestCost,
+      avoidTransfers: avoidTransfers,
+      needAccessibility: needAccessibility,
+
+      firstAccess: false,
+    );
+
+    await StorageService.updateUser(updatedUser);
+
+    if (!mounted) return;
+
+    context.go(AppRoutes.home);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -181,12 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 const SizedBox(height: 32),
 
-                ChegueiButton(
-                  text: 'Salvar Perfil',
-                  onPressed: () {
-                    context.go(AppRoutes.home);
-                  },
-                ),
+                ChegueiButton(text: 'Salvar Perfil', onPressed: saveProfile),
 
                 //ChegueiButton(text: 'Salvar Perfil', onPressed: () {}),
               ],
