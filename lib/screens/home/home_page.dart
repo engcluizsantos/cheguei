@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cheguei/core/widgets/cheguei_textfield.dart';
 import 'package:cheguei/core/widgets/cheguei_button.dart';
 import 'package:cheguei/core/widgets/recommendation_card.dart';
+import 'package:cheguei/models/recommendation_model.dart';
+import 'package:cheguei/services/recommendation/recommendation_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,6 +19,19 @@ class _HomePageState extends State<HomePage> {
   final originController = TextEditingController();
   final destinationController = TextEditingController();
 
+  List<RecommendationModel> recommendations = [];
+
+  void loadRecommendations() {
+    final user = StorageService.getUser();
+
+    if (user == null) return;
+
+    recommendations = RecommendationService.generateRecommendations(
+      distanceKm: 0.8,
+      user: user,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +41,7 @@ class _HomePageState extends State<HomePage> {
     if (user != null) {
       userName = user.name;
     }
+    loadRecommendations();
   }
 
   @override
@@ -83,32 +99,14 @@ class _HomePageState extends State<HomePage> {
 
             const SizedBox(height: 16),
 
-            RecommendationCard(
-              emoji: '🚶',
-              title: 'Caminhada',
-              subtitle: '800 metros • 10 minutos',
-              onTap: () {},
-            ),
-
-            RecommendationCard(
-              emoji: '🚲',
-              title: 'Bicicleta',
-              subtitle: '800 metros • 4 minutos',
-              onTap: () {},
-            ),
-
-            RecommendationCard(
-              emoji: '🚌',
-              title: 'Ônibus',
-              subtitle: 'Linha 4310 • 18 minutos',
-              onTap: () {},
-            ),
-
-            RecommendationCard(
-              emoji: '🚗',
-              title: 'Carro',
-              subtitle: '800 metros • 5 minutos',
-              onTap: () {},
+            ...recommendations.map(
+              (item) => RecommendationCard(
+                emoji: item.emoji,
+                title: item.recommended ? '${item.type} ⭐' : item.type,
+                subtitle:
+                    '${item.description} • Pontuação: ${item.score.toStringAsFixed(0)}',
+                onTap: () {},
+              ),
             ),
           ],
         ),
