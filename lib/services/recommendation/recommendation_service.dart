@@ -5,6 +5,7 @@ class RecommendationService {
   static List<RecommendationModel> generateRecommendations({
     required double distanceKm,
     required UserModel user,
+    required bool hasNearbyBusStop,
   }) {
     final recommendations = <RecommendationModel>[];
 
@@ -16,6 +17,13 @@ class RecommendationService {
 
     // 🚌 Ônibus
     double busScore = 70;
+
+    // Existe parada próxima?
+    if (hasNearbyBusStop) {
+      busScore += 20;
+    } else {
+      busScore -= 20;
+    }
 
     // 🚗 Carro
     double carScore = 60;
@@ -86,11 +94,7 @@ class RecommendationService {
     final best = recommendations.first;
 
     return recommendations
-        .map(
-          (item) => item.copyWith(
-            recommended: item.type == best.type,
-          ),
-        )
+        .map((item) => item.copyWith(recommended: item.type == best.type))
         .toList();
   }
 }
