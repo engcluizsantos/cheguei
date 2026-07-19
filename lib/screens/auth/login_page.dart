@@ -1,6 +1,6 @@
 import 'package:cheguei/app/app_router.dart';
 import 'package:cheguei/core/widgets/cheguei_button.dart';
-import 'package:cheguei/core/widgets/cheguei_logo.dart';
+//import 'package:cheguei/core/widgets/cheguei_logo.dart';
 import 'package:cheguei/core/widgets/cheguei_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -34,11 +34,28 @@ class _LoginPageState extends State<LoginPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const ChegueiLogo(
-                    iconSize: 60,
-                    titleSize: 28,
-                    showSubtitle: false,
+                  Image.asset('assets/images/logo_cheguei.png', width: 220),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'Bem-vindo!',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
                   ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Entre para continuar',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+
+                  const SizedBox(height: 40),
 
                   const SizedBox(height: 40),
 
@@ -93,14 +110,6 @@ class _LoginPageState extends State<LoginPage> {
                       } else {
                         context.go(AppRoutes.home);
                       }
-
-                      /*ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Login realizado com sucesso!'),
-                        ),
-                      );*/
-
-                      // A navegação será implementada na próxima etapa.
                     },
                   ),
 

@@ -21,6 +21,16 @@ class ChegueiButton extends StatelessWidget {
       height: 55,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.deepPurpleAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
         child: isLoading
             ? const SizedBox(
                 width: 22,
@@ -34,7 +44,7 @@ class ChegueiButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon),
+                    Icon(icon, size: 22),
                     const SizedBox(width: 8),
                   ],
                   Text(text),

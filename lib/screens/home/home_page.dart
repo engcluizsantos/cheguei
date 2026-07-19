@@ -108,24 +108,6 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {});
 
-    debugPrint('');
-    debugPrint('========== RESULTADO DA BUSCA ==========');
-
-    debugPrint('Origem: $origin');
-    debugPrint('Paradas encontradas: ${originStops.length}');
-    if (originStops.isNotEmpty) {
-      debugPrint('Primeira parada: ${originStops.first.name}');
-    }
-
-    debugPrint('');
-
-    debugPrint('Destino: $destination');
-    debugPrint('Paradas encontradas: ${destinationStops.length}');
-    if (destinationStops.isNotEmpty) {
-      debugPrint('Primeira parada: ${destinationStops.first.name}');
-    }
-
-    debugPrint('========================================');
   }
 
   void loadRecommendations() {
@@ -184,12 +166,25 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Olá, $userName!',
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Olá, $userName 👋',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  const Text(
+                    'Mobilidade inteligente.',
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 30),
@@ -197,8 +192,8 @@ class _HomePageState extends State<HomePage> {
               ChegueiTextField(
                 controller: originController,
                 label: 'Origem',
-                hint: 'Digite o local de origem',
-                prefixIcon: Icons.my_location,
+                hint: 'Ex.: Lapa, São Paulo',
+                prefixIcon: Icons.trip_origin,
               ),
 
               const SizedBox(height: 16),
@@ -206,14 +201,15 @@ class _HomePageState extends State<HomePage> {
               ChegueiTextField(
                 controller: destinationController,
                 label: 'Destino',
-                hint: 'Digite o destino',
-                prefixIcon: Icons.location_on,
+                hint: 'Ex.: Paulista, São Paulo',
+                prefixIcon: Icons.place,
               ),
 
               const SizedBox(height: 24),
 
               ChegueiButton(
                 text: 'Encontrar melhor rota',
+                icon: Icons.route,
                 onPressed: findBestRoute,
               ),
 
@@ -348,27 +344,58 @@ class _HomePageState extends State<HomePage> {
 
               if (nearbyStops.isNotEmpty)
                 Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '🚌 Paradas próximas',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.directions_bus,
+                              color: Colors.deepPurple,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Paradas próximas',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                          ],
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
                         ...nearbyStops
                             .take(5)
                             .map(
                               (stop) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Text('• ${stop.name}'),
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.location_on,
+                                      color: Colors.red,
+                                      size: 18,
+                                    ),
+
+                                    const SizedBox(width: 10),
+
+                                    Expanded(
+                                      child: Text(
+                                        stop.name,
+                                        style: const TextStyle(fontSize: 15),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                       ],
@@ -415,205 +442,3 @@ class _HomePageState extends State<HomePage> {
     }
   }
 }
-
-/* CODIGO ANTIGO
-import 'package:cheguei/services/storage/storage_service.dart';
-import 'package:flutter/material.dart';
-import 'package:cheguei/core/widgets/cheguei_textfield.dart';
-import 'package:cheguei/core/widgets/cheguei_button.dart';
-import 'package:cheguei/core/widgets/recommendation_card.dart';
-import 'package:cheguei/models/recommendation_model.dart';
-import 'package:cheguei/services/recommendation/recommendation_service.dart';
-import 'package:cheguei/services/location/location_service.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  String userName = '';
-
-  final originController = TextEditingController();
-  final destinationController = TextEditingController();
-
-  List<RecommendationModel> recommendations = [];
-
-  double? latitude;
-  double? longitude;
-
-  double distanceKm = 0;
-
-  Future<void> loadLocation() async {
-    final position = await LocationService.getCurrentLocation();
-
-    if (position == null) return;
-
-    setState(() {
-      latitude = position.latitude;
-      longitude = position.longitude;
-    });
-
-    distanceKm = LocationService.calculateDistance(
-      startLatitude: latitude!,
-      startLongitude: longitude!,
-      endLatitude: latitude! + 0.005,
-      endLongitude: longitude! + 0.005,
-    );
-
-    loadRecommendations();
-
-    setState(() {});
-  }
-
-  void loadRecommendations() {
-    final user = StorageService.getUser();
-
-    if (user == null) return;
-
-    recommendations = RecommendationService.generateRecommendations(
-      distanceKm: distanceKm,
-      user: user,
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    final user = StorageService.getUser();
-
-    if (user != null) {
-      userName = user.name;
-    }
-
-    loadLocation();
-  }
-
-  @override
-  void dispose() {
-    originController.dispose();
-    destinationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cheguei')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Olá, $userName!',
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              ChegueiTextField(
-                controller: originController,
-                label: 'Origem',
-                hint: 'Digite o local de origem',
-                prefixIcon: Icons.my_location,
-              ),
-
-              const SizedBox(height: 16),
-
-              ChegueiTextField(
-                controller: destinationController,
-                label: 'Destino',
-                hint: 'Digite o destino',
-                prefixIcon: Icons.location_on,
-              ),
-
-              const SizedBox(height: 24),
-
-              ChegueiButton(text: 'Encontrar melhor rota', onPressed: () {}),
-
-              // APENAS PARA TESTE-------------------------------------------------------------
-              if (latitude != null && longitude != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'Latitude: ${latitude!.toStringAsFixed(6)}\n'
-                    'Longitude: ${longitude!.toStringAsFixed(6)}',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-
-              if (latitude != null && longitude != null)
-                SizedBox(
-                  height: 300,
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCenter: LatLng(latitude!, longitude!),
-                      initialZoom: 15,
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.cheguei.app',
-                      ),
-
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(latitude!, longitude!),
-                            width: 40,
-                            height: 40,
-                            child: const Icon(
-                              Icons.location_on,
-                              size: 40,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-              //--------------------------------------------------------------------------------
-
-              //Card de Caminhada
-              const SizedBox(height: 32),
-
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Sugestões de rota',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              ...recommendations.map(
-                (item) => RecommendationCard(
-                  emoji: item.emoji,
-                  title: item.recommended ? '${item.type} ⭐' : item.type,
-                  subtitle:
-                      '${item.description} • Pontuação: ${item.score.toStringAsFixed(0)}',
-                  onTap: () {},
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-*/
