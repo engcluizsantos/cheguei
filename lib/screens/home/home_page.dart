@@ -13,6 +13,8 @@ import 'package:cheguei/core/constants/sptrans_constants.dart';
 import 'package:cheguei/repositories/sptrans_repository.dart';
 import 'package:cheguei/models/sptrans_stop_model.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import 'package:cheguei/app/app_router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -107,7 +109,6 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {});
-
   }
 
   void loadRecommendations() {
@@ -211,6 +212,16 @@ class _HomePageState extends State<HomePage> {
                 text: 'Encontrar melhor rota',
                 icon: Icons.route,
                 onPressed: findBestRoute,
+              ),
+
+              const SizedBox(height: 12),
+
+              OutlinedButton.icon(
+                onPressed: () {
+                  context.push(AppRoutes.assistant);
+                },
+                icon: const Icon(Icons.smart_toy),
+                label: const Text('Assistente Inteligente'),
               ),
 
               const SizedBox(height: 32),
