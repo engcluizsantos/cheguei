@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cheguei/services/location/location_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key});
@@ -9,6 +12,70 @@ class AssistantPage extends StatefulWidget {
 
 class _AssistantPageState extends State<AssistantPage> {
   final destinationController = TextEditingController();
+
+  Position? currentPosition;
+  bool loadingLocation = true;
+
+  String currentAddress = 'Localizando...';
+
+  String locationMessage = '';
+
+  Future<void> loadLocation() async {
+    final status = await LocationService.checkLocationStatus();
+
+    if (status != null) {
+      if (!mounted) return;
+
+      setState(() {
+        loadingLocation = false;
+        currentAddress = status;
+      });
+
+      return;
+    }
+
+    final position = await LocationService.getCurrentLocation();
+
+    if (!mounted) return;
+
+    if (position == null) {
+      setState(() {
+        loadingLocation = false;
+        currentAddress = 'Não foi possível obter a localização.';
+      });
+      return;
+    }
+
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      final place = placemarks.first;
+
+      setState(() {
+        currentPosition = position;
+        currentAddress =
+            '${place.subLocality?.isNotEmpty == true ? place.subLocality : place.locality}\n'
+            '${place.locality} - ${place.administrativeArea}';
+        loadingLocation = false;
+      });
+    } catch (e) {
+      setState(() {
+        currentPosition = position;
+        currentAddress =
+            'Localização encontrada, mas não foi possível obter o endereço.';
+        loadingLocation = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadLocation();
+  }
 
   @override
   void dispose() {
@@ -60,7 +127,9 @@ class _AssistantPageState extends State<AssistantPage> {
               child: ListTile(
                 leading: const Icon(Icons.my_location),
                 title: const Text('Sua localização'),
-                subtitle: const Text('Localizando...'),
+                subtitle: loadingLocation
+                    ? const Text('📡 Localizando...')
+                    : Text(currentAddress),
               ),
             ),
 
