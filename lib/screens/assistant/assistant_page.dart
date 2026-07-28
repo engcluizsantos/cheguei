@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cheguei/services/location/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:cheguei/services/assistant/assistant_service.dart';
 
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key});
@@ -19,6 +20,9 @@ class _AssistantPageState extends State<AssistantPage> {
   String currentAddress = 'Localizando...';
 
   String locationMessage = '';
+
+  String assistantMessage =
+    'Olá! Eu sou o Gui.\n\nPara onde você deseja ir hoje?';
 
   Future<void> loadLocation() async {
     final status = await LocationService.checkLocationStatus();
@@ -71,6 +75,19 @@ class _AssistantPageState extends State<AssistantPage> {
     }
   }
 
+  Future<void> findRoute() async {
+  final message = await AssistantService.analyze(
+    currentLocation: currentAddress,
+    destination: destinationController.text,
+  );
+
+  if (!mounted) return;
+
+  setState(() {
+    assistantMessage = message;
+  });
+}
+
   @override
   void initState() {
     super.initState();
@@ -103,7 +120,7 @@ class _AssistantPageState extends State<AssistantPage> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             const Center(
               child: Text(
@@ -113,6 +130,7 @@ class _AssistantPageState extends State<AssistantPage> {
             ),
 
             const SizedBox(height: 12),
+
 
             const Center(
               child: Text(
@@ -151,7 +169,8 @@ class _AssistantPageState extends State<AssistantPage> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                //onPressed: () {},
+                onPressed: findRoute,
                 icon: const Icon(Icons.search),
                 label: const Text('Encontrar melhor rota'),
               ),
@@ -163,11 +182,17 @@ class _AssistantPageState extends State<AssistantPage> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  children: const [
-                    Icon(Icons.smart_toy, size: 50),
-                    SizedBox(height: 16),
+                  children: [
+
+                    const Icon(Icons.smart_toy, size: 50),
+
+                    const SizedBox(height: 16),
+
+                    // Icon(Icons.smart_toy, size: 50),
+                    // SizedBox(height: 16),
+                    
                     Text(
-                      'A recomendação aparecerá aqui.',
+                      assistantMessage,
                       textAlign: TextAlign.center,
                     ),
                   ],
