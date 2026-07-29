@@ -7,6 +7,7 @@ class AssistantService {
   static Future<String> analyze({
     required String currentLocation,
     required String destination,
+    required double distanceKm,
   }) async {
     if (destination.trim().isEmpty) {
       return 'Informe um destino para que eu possa ajudá-lo.';
@@ -18,34 +19,36 @@ class AssistantService {
       return 'Não encontrei um perfil cadastrado.';
     }
 
-    const double simulatedDistance = 5.0;
+    final List<RecommendationModel> recommendations =
+        RecommendationService.generateRecommendations(
+          distanceKm: distanceKm,
+          user: user,
+          hasNearbyBusStop: true,
+        );
 
-final List<RecommendationModel> recommendations =
-    RecommendationService.generateRecommendations(
-  distanceKm: simulatedDistance,
-  user: user,
-  hasNearbyBusStop: true,
-);
+    final RecommendationModel best = recommendations.first;
 
-final RecommendationModel best = recommendations.first;
+return '''
+🤖 Olá!
 
-    return '''
-Olá!
+Analisei sua solicitação e encontrei uma boa opção para você.
 
-Analisei sua solicitação.
-
-📍 Origem:
+📍 Você está em:
 $currentLocation
 
 🎯 Destino:
 $destination
 
-${best.emoji} Minha recomendação é utilizar ${best.type}.
+📏 Distância aproximada:
+${distanceKm.toStringAsFixed(1)} km
 
-Motivo:
-Essa opção foi considerada a mais adequada com base no seu perfil e nas regras do aplicativo.
+${best.emoji} Recomendo utilizar ${best.type}.
 
-Pontuação: ${best.score.toStringAsFixed(0)} pontos.
+Essa alternativa apresentou a melhor pontuação para o seu perfil, considerando as preferências cadastradas e as regras de mobilidade do aplicativo.
+
+⭐ Pontuação da recomendação:
+${best.score.toStringAsFixed(0)} pontos.
 ''';
+
   }
 }

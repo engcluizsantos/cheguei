@@ -22,7 +22,10 @@ class _AssistantPageState extends State<AssistantPage> {
   String locationMessage = '';
 
   String assistantMessage =
-    'Olá! Eu sou o Gui.\n\nPara onde você deseja ir hoje?';
+      'Olá! Eu sou o Gui.\n\nPara onde você deseja ir hoje?';
+
+  String recommendedTransport = '';
+  String recommendedEmoji = '';
 
   Future<void> loadLocation() async {
     final status = await LocationService.checkLocationStatus();
@@ -76,17 +79,83 @@ class _AssistantPageState extends State<AssistantPage> {
   }
 
   Future<void> findRoute() async {
-  final message = await AssistantService.analyze(
-    currentLocation: currentAddress,
-    destination: destinationController.text,
-  );
+    if (currentPosition == null) {
+      setState(() {
+        assistantMessage = 'Não foi possível obter sua localização atual.';
+      });
+      return;
+    }
 
-  if (!mounted) return;
+    final destinationPosition = await getDestinationPosition(
+      destinationController.text,
+    );
 
-  setState(() {
-    assistantMessage = message;
-  });
-}
+    if (destinationPosition == null) {
+      setState(() {
+        assistantMessage = 'Não consegui localizar o destino informado.';
+      });
+      return;
+    }
+
+    final distanceKm = LocationService.calculateDistance(
+      startLatitude: currentPosition!.latitude,
+      startLongitude: currentPosition!.longitude,
+      endLatitude: destinationPosition.latitude,
+      endLongitude: destinationPosition.longitude,
+    );
+
+    final message = await AssistantService.analyze(
+      currentLocation: currentAddress,
+      destination: destinationController.text,
+      distanceKm: distanceKm,
+    );
+
+    if (!mounted) return;
+
+    String emoji = '';
+
+    if (message.contains('🚶')) {
+      recommendedTransport = 'Caminhada';
+      emoji = '🚶';
+    } else if (message.contains('🚲')) {
+      recommendedTransport = 'Bicicleta';
+      emoji = '🚲';
+    } else if (message.contains('🚌')) {
+      recommendedTransport = 'Ônibus';
+      emoji = '🚌';
+    } else if (message.contains('🚗')) {
+      recommendedTransport = 'Carro';
+      emoji = '🚗';
+    }
+
+    setState(() {
+      assistantMessage = message;
+      recommendedEmoji = emoji;
+    });
+  }
+
+  Future<Position?> getDestinationPosition(String destination) async {
+    try {
+      final locations = await locationFromAddress(destination);
+
+      if (locations.isEmpty) return null;
+
+      return Position(
+        latitude: locations.first.latitude,
+        longitude: locations.first.longitude,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   void initState() {
@@ -130,7 +199,6 @@ class _AssistantPageState extends State<AssistantPage> {
             ),
 
             const SizedBox(height: 12),
-
 
             const Center(
               child: Text(
@@ -183,17 +251,45 @@ class _AssistantPageState extends State<AssistantPage> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-
                     const Icon(Icons.smart_toy, size: 50),
 
                     const SizedBox(height: 16),
 
-                    // Icon(Icons.smart_toy, size: 50),
-                    // SizedBox(height: 16),
-                    
+                    if (recommendedTransport.isNotEmpty)
+                      Card(
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Melhor opção encontrada',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                recommendedEmoji,
+                                style: const TextStyle(fontSize: 40),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                recommendedTransport,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 20),
+
                     Text(
                       assistantMessage,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(fontSize: 16, height: 1.5),
                     ),
                   ],
                 ),
