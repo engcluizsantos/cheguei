@@ -18,11 +18,18 @@ class RecommendationService {
     // 🚌 Ônibus
     double busScore = 70;
 
+    // 🚉 Metro
+    double metroScore = 80;
+
     // Existe parada próxima?
     if (hasNearbyBusStop) {
       busScore += 20;
     } else {
       busScore -= 20;
+    }
+
+    if (distanceKm > 5) {
+      metroScore += 15;
     }
 
     // 🚗 Carro
@@ -75,6 +82,16 @@ class RecommendationService {
         emoji: '🚌',
         description: 'Transporte público',
         score: busScore,
+        recommended: false,
+      ),
+    );
+
+    recommendations.add(
+      RecommendationModel(
+        type: 'Metrô',
+        emoji: '🚇',
+        description: 'Transporte sobre trilhos',
+        score: metroScore,
         recommended: false,
       ),
     );

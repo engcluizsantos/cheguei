@@ -1,6 +1,7 @@
 class AssistantResponse {
   final String message;
   final bool success;
+
   final String transport;
   final double distanceKm;
   final double score;

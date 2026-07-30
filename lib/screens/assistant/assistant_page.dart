@@ -104,7 +104,7 @@ class _AssistantPageState extends State<AssistantPage> {
       endLongitude: destinationPosition.longitude,
     );
 
-    final message = await AssistantService.analyze(
+    final response = await AssistantService.analyze(
       currentLocation: currentAddress,
       destination: destinationController.text,
       distanceKm: distanceKm,
@@ -114,24 +114,34 @@ class _AssistantPageState extends State<AssistantPage> {
 
     String emoji = '';
 
-    if (message.contains('🚶')) {
-      recommendedTransport = 'Caminhada';
-      emoji = '🚶';
-    } else if (message.contains('🚲')) {
-      recommendedTransport = 'Bicicleta';
-      emoji = '🚲';
-    } else if (message.contains('🚌')) {
-      recommendedTransport = 'Ônibus';
-      emoji = '🚌';
-    } else if (message.contains('🚗')) {
-      recommendedTransport = 'Carro';
-      emoji = '🚗';
+    switch (response.transport) {
+      case 'Caminhada':
+        emoji = '🚶';
+        break;
+
+      case 'Bicicleta':
+        emoji = '🚲';
+        break;
+
+      case 'Ônibus':
+        emoji = '🚌';
+        break;
+
+      case 'Metrô':
+        emoji = '🚇';
+        break;
+
+      case 'Carro':
+        emoji = '🚗';
+        break;
     }
 
-    setState(() {
-      assistantMessage = message;
-      recommendedEmoji = emoji;
-    });
+setState(() {
+  assistantMessage = response.message;
+  recommendedTransport = response.transport;
+  recommendedEmoji = emoji;
+});
+
   }
 
   Future<Position?> getDestinationPosition(String destination) async {
