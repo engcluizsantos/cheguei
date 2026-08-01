@@ -3,6 +3,8 @@ import 'package:cheguei/services/location/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:cheguei/services/assistant/assistant_service.dart';
+import 'package:cheguei/models/weather_model.dart';
+import 'package:cheguei/services/weather/weather_service.dart';
 
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key});
@@ -18,6 +20,8 @@ class _AssistantPageState extends State<AssistantPage> {
   bool loadingLocation = true;
 
   String currentAddress = 'Localizando...';
+
+  WeatherModel? currentWeather;
 
   String locationMessage = '';
 
@@ -61,11 +65,19 @@ class _AssistantPageState extends State<AssistantPage> {
 
       final place = placemarks.first;
 
+      final weather = await WeatherService.getCurrentWeather(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+
       setState(() {
         currentPosition = position;
+        currentWeather = weather;
+
         currentAddress =
             '${place.subLocality?.isNotEmpty == true ? place.subLocality : place.locality}\n'
             '${place.locality} - ${place.administrativeArea}';
+
         loadingLocation = false;
       });
     } catch (e) {
@@ -108,6 +120,8 @@ class _AssistantPageState extends State<AssistantPage> {
       currentLocation: currentAddress,
       destination: destinationController.text,
       distanceKm: distanceKm,
+      temperature: currentWeather?.temperature ?? 0,
+      isRaining: currentWeather?.isRaining ?? false,
     );
 
     if (!mounted) return;
@@ -136,12 +150,11 @@ class _AssistantPageState extends State<AssistantPage> {
         break;
     }
 
-setState(() {
-  assistantMessage = response.message;
-  recommendedTransport = response.transport;
-  recommendedEmoji = emoji;
-});
-
+    setState(() {
+      assistantMessage = response.message;
+      recommendedTransport = response.transport;
+      recommendedEmoji = emoji;
+    });
   }
 
   Future<Position?> getDestinationPosition(String destination) async {
@@ -226,6 +239,21 @@ setState(() {
                 subtitle: loadingLocation
                     ? const Text('📡 Localizando...')
                     : Text(currentAddress),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.cloud),
+                title: const Text('Clima Atual'),
+                subtitle: currentWeather == null
+                    ? const Text('Não disponível')
+                    : Text(
+                        '${currentWeather!.temperature.toStringAsFixed(1)}°C\n'
+                        '${currentWeather!.isRaining ? "🌧️ Chovendo" : "☀️ Sem chuva"}',
+                      ),
               ),
             ),
 

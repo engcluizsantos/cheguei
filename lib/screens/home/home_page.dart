@@ -120,6 +120,7 @@ class _HomePageState extends State<HomePage> {
       distanceKm: distanceKm,
       user: user,
       hasNearbyBusStop: nearbyStops.isNotEmpty,
+      isRaining: false,
     );
   }
 

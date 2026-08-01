@@ -10,6 +10,8 @@ class AssistantService {
     required String currentLocation,
     required String destination,
     required double distanceKm,
+    required double temperature,
+    required bool isRaining,
   }) async {
     if (destination.trim().isEmpty) {
       return const AssistantResponse(
@@ -18,6 +20,8 @@ class AssistantService {
         transport: '',
         distanceKm: 0,
         score: 0,
+        temperature: 0,
+        isRaining: false,
       );
     }
 
@@ -30,6 +34,8 @@ class AssistantService {
         transport: '',
         distanceKm: 0,
         score: 0,
+        temperature: 0,
+        isRaining: false,
       );
     }
 
@@ -44,9 +50,21 @@ class AssistantService {
           distanceKm: distanceKm,
           user: user,
           hasNearbyBusStop: true,
+          isRaining: isRaining,
         );
 
     final RecommendationModel best = recommendations.first;
+
+    String weatherMessage = '';
+
+    if (isRaining) {
+      weatherMessage =
+          '\n🌧️ Detectei chuva na sua região.\n'
+          '🚶 Caminhada e 🚲 bicicleta receberam menor pontuação.\n';
+    } else {
+      weatherMessage =
+          '\n☀️ O clima está favorável para deslocamentos ao ar livre.\n';
+    }
 
     return AssistantResponse(
       success: true,
@@ -69,6 +87,11 @@ $metroStatus
 📏 Distância aproximada:
 ${distanceKm.toStringAsFixed(1)} km
 
+🌡️ Temperatura:
+${temperature.toStringAsFixed(1)}°C
+
+$weatherMessage
+
 ${best.emoji} Recomendo utilizar ${best.type}.
 
 ⭐ Pontuação:
@@ -77,6 +100,9 @@ ${best.score.toStringAsFixed(0)} pontos.
       transport: best.type,
       distanceKm: distanceKm,
       score: best.score,
+
+      temperature: 0,
+      isRaining: false,
     );
   }
 }

@@ -6,6 +6,7 @@ class RecommendationService {
     required double distanceKm,
     required UserModel user,
     required bool hasNearbyBusStop,
+    required bool isRaining,
   }) {
     final recommendations = <RecommendationModel>[];
 
@@ -34,6 +35,15 @@ class RecommendationService {
 
     // 🚗 Carro
     double carScore = 60;
+
+    // 🌧️ Ajuste por clima
+    if (isRaining) {
+      walkScore -= 40;
+      bikeScore -= 50;
+
+      busScore += 20;
+      carScore += 20;
+    }
 
     // Perfil do usuário
     if (user.isElderly || user.hasDisability || user.reducedMobility) {
