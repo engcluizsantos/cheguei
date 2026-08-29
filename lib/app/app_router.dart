@@ -5,6 +5,7 @@ import 'package:cheguei/screens/auth/register_page.dart';
 import 'package:cheguei/screens/profile/profile_page.dart';
 import 'package:cheguei/screens/home/home_page.dart';
 import 'package:cheguei/screens/assistant/assistant_page.dart';
+import 'package:cheguei/screens/favorites/favorites_page.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -56,6 +57,11 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.assistant,
         builder: (context, state) => const AssistantPage(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.favorites,
+        builder: (context, state) => const FavoritesPage(),
       ),
     ],
   );

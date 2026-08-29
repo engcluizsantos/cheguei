@@ -86,6 +86,8 @@ class SpTransService {
     return jsonDecode(response.body);
   }
 
+  
+
   /* METODO ANTIGO
   static Future<Map<String, dynamic>?> getItinerary(int lineId) async {
     final response = await _client.get(

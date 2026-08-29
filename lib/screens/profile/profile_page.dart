@@ -74,7 +74,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (!mounted) return;
 
-    context.go(AppRoutes.home);
+    //context.go(AppRoutes.home);
+    context.go(AppRoutes.assistant);
   }
 
   @override

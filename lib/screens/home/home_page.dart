@@ -15,6 +15,7 @@ import 'package:cheguei/models/sptrans_stop_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cheguei/app/app_router.dart';
+import 'package:geocoding/geocoding.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,8 +32,13 @@ class _HomePageState extends State<HomePage> {
 
   List<RecommendationModel> recommendations = [];
 
+  // VARIÁVEIS DE ORIGEM
   double? latitude;
   double? longitude;
+
+  // VARIÁVEIS DE DESTINO
+  double? destinationLatitude;
+  double? destinationLongitude;
 
   double distanceKm = 0;
 
@@ -76,6 +82,13 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
+    final destinationLocations = await locationFromAddress(destination);
+
+    if (destinationLocations.isNotEmpty) {
+      destinationLatitude = destinationLocations.first.latitude;
+      destinationLongitude = destinationLocations.first.longitude;
+    }
+
     final authenticated = await SpTransService.authenticate(
       SpTransConstants.apiKey,
     );
@@ -116,10 +129,12 @@ class _HomePageState extends State<HomePage> {
 
     if (user == null) return;
 
-    recommendations = RecommendationService.generateRecommendations(
+    RecommendationService.generateRecommendations(
       distanceKm: distanceKm,
       user: user,
       hasNearbyBusStop: nearbyStops.isNotEmpty,
+      hasStrongBusCoverage: false,
+      metroStationsFound: 0,
       isRaining: false,
     );
   }
@@ -345,6 +360,22 @@ class _HomePageState extends State<HomePage> {
                                 color: Colors.red,
                               ),
                             ),
+
+                            if (destinationLatitude != null &&
+                                destinationLongitude != null)
+                              Marker(
+                                point: LatLng(
+                                  destinationLatitude!,
+                                  destinationLongitude!,
+                                ),
+                                width: 40,
+                                height: 40,
+                                child: const Icon(
+                                  Icons.flag,
+                                  size: 40,
+                                  color: Colors.blue,
+                                ),
+                              ),
                           ],
                         ),
                       ],

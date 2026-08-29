@@ -6,6 +6,8 @@ class RecommendationService {
     required double distanceKm,
     required UserModel user,
     required bool hasNearbyBusStop,
+    required bool hasStrongBusCoverage,
+    required int metroStationsFound,
     required bool isRaining,
   }) {
     final recommendations = <RecommendationModel>[];
@@ -17,20 +19,28 @@ class RecommendationService {
     double bikeScore = distanceKm <= 3 ? 90 : 50;
 
     // 🚌 Ônibus
-    double busScore = 70;
+    double busScore = 80;
 
     // 🚉 Metro
     double metroScore = 80;
 
     // Existe parada próxima?
     if (hasNearbyBusStop) {
-      busScore += 20;
+      busScore += 30;
     } else {
       busScore -= 20;
     }
 
+    if (hasStrongBusCoverage) {
+      busScore += 25;
+    }
+
     if (distanceKm > 5) {
       metroScore += 15;
+    }
+
+    if (metroStationsFound > 0) {
+      metroScore += 20;
     }
 
     // 🚗 Carro
@@ -115,6 +125,13 @@ class RecommendationService {
         recommended: false,
       ),
     );
+
+    print('🚶 Caminhada: $walkScore');
+    print('🚲 Bicicleta: $bikeScore');
+    print('🚌 Ônibus: $busScore');
+    print('🚇 Metro: $metroScore');
+    print('🚗 Carro: $carScore');
+    print('🚌 hasNearbyBusStop: $hasNearbyBusStop');
 
     recommendations.sort((a, b) => b.score.compareTo(a.score));
 

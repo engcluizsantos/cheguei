@@ -5,6 +5,13 @@ import 'package:geocoding/geocoding.dart';
 import 'package:cheguei/services/assistant/assistant_service.dart';
 import 'package:cheguei/models/weather_model.dart';
 import 'package:cheguei/services/weather/weather_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:cheguei/services/storage/storage_service.dart';
+import 'package:go_router/go_router.dart';
+//import 'package:animated_text_kit/animated_text_kit.dart';
+
+// O AssistantPage é um StatefulWidget, isso significa que ele precisa atualizar as informações
+// dinamicamente (localização, clima, rota).
 
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key});
@@ -12,6 +19,9 @@ class AssistantPage extends StatefulWidget {
   @override
   State<AssistantPage> createState() => _AssistantPageState();
 }
+
+// A classe _AssistantPageState guarda variáveis como localização atual, clima, mensagens do
+// Assistente e transporte recomendado.
 
 class _AssistantPageState extends State<AssistantPage> {
   final destinationController = TextEditingController();
@@ -30,6 +40,11 @@ class _AssistantPageState extends State<AssistantPage> {
 
   String recommendedTransport = '';
   String recommendedEmoji = '';
+
+  /* LOCALIZAÇÃO
+  * Usa o LocationService e o pacote geolocator para obter a localização atual.
+  * Converte Latitude e Longitude em endereço com placemarkFromCoordinates (Pacote Geocoding)
+  */
 
   Future<void> loadLocation() async {
     final status = await LocationService.checkLocationStatus();
@@ -180,6 +195,14 @@ class _AssistantPageState extends State<AssistantPage> {
     }
   }
 
+  Future<void> openGoogleMaps(String destination) async {
+    final Uri url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(destination)}',
+    );
+
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -198,6 +221,22 @@ class _AssistantPageState extends State<AssistantPage> {
       appBar: AppBar(
         title: const Text('Assistente Inteligente'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.push('/favorites');
+            },
+            icon: const Icon(Icons.star),
+            tooltip: 'Favoritos',
+          ),
+          IconButton(
+            onPressed: () {
+              context.push('/home');
+            },
+            icon: const Icon(Icons.home),
+            tooltip: 'Home',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -269,6 +308,40 @@ class _AssistantPageState extends State<AssistantPage> {
               ),
             ),
 
+            const SizedBox(height: 12),
+
+            ElevatedButton.icon(
+              onPressed: () {
+                if (destinationController.text.trim().isNotEmpty) {
+                  openGoogleMaps(destinationController.text);
+                }
+              },
+              icon: const Icon(Icons.map),
+              label: const Text('Ver no Google Maps'),
+            ),
+
+            const SizedBox(height: 12),
+
+            ElevatedButton.icon(
+              onPressed: () async {
+                final destination = destinationController.text.trim();
+
+                if (destination.isNotEmpty) {
+                  await StorageService.saveFavorite(destination);
+
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Destino adicionado aos favoritos.'),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.star),
+              label: const Text('Adicionar aos favoritos'),
+            ),
+
             const SizedBox(height: 30),
 
             SizedBox(
@@ -324,6 +397,43 @@ class _AssistantPageState extends State<AssistantPage> {
 
                     const SizedBox(height: 20),
 
+                    // ANIMA A SAUDAÇÃO DO ASSISTENTE
+
+                    /*
+                    AnimatedTextKit(
+                      animatedTexts: [
+                        TypewriterAnimatedText(
+                          assistantMessage,
+                          textStyle: const TextStyle(fontSize: 16, height: 1.5),
+                          speed: const Duration(milliseconds: 80),
+                        ),
+                      ],
+                      totalRepeatCount: 1, // só uma vez
+                      pause: const Duration(milliseconds: 500),
+                      displayFullTextOnTap:
+                          true, // mostra tudo se o usuário tocar
+                      stopPauseOnTap: true,
+                    ),
+                    */
+
+                    /*
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 600),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                      child: Text(
+                        assistantMessage,
+                        key: ValueKey<String>(assistantMessage),
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(fontSize: 16, height: 1.5),
+                      ),
+                    ),
+                    */
                     Text(
                       assistantMessage,
                       textAlign: TextAlign.left,
