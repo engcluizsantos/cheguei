@@ -124,6 +124,8 @@ class _AssistantPageState extends State<AssistantPage> {
       return;
     }
 
+    await StorageService.saveHistory(destinationController.text.trim());
+
     final distanceKm = LocationService.calculateDistance(
       startLatitude: currentPosition!.latitude,
       startLongitude: currentPosition!.longitude,
@@ -203,6 +205,74 @@ class _AssistantPageState extends State<AssistantPage> {
     await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
+  void useFrequentDestination(String? address, String label) {
+    if (address == null || address.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nenhum endereço de $label cadastrado.')),
+      );
+      return;
+    }
+
+    setState(() {
+      destinationController.text = address;
+    });
+  }
+
+  Future<void> saveFrequentDestination(
+    String label,
+    Future<void> Function(String) saveAddress,
+  ) async {
+    final controller = TextEditingController();
+
+    final address = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Cadastrar $label'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: 'Endereço de $label',
+              hintText: 'Digite o endereço completo',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final value = controller.text.trim();
+
+                if (value.isNotEmpty) {
+                  Navigator.pop(context, value);
+                }
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (address == null || address.isEmpty) {
+      return;
+    }
+
+    await saveAddress(address);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$label salvo com sucesso.')));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -224,6 +294,13 @@ class _AssistantPageState extends State<AssistantPage> {
         actions: [
           IconButton(
             onPressed: () {
+              context.push('/profile');
+            },
+            icon: const Icon(Icons.person),
+            tooltip: 'Perfil',
+          ),
+          IconButton(
+            onPressed: () {
               context.push('/favorites');
             },
             icon: const Icon(Icons.star),
@@ -235,6 +312,13 @@ class _AssistantPageState extends State<AssistantPage> {
             },
             icon: const Icon(Icons.home),
             tooltip: 'Home',
+          ),
+          IconButton(
+            onPressed: () {
+              context.push('/history');
+            },
+            icon: const Icon(Icons.history),
+            tooltip: 'Histórico',
           ),
         ],
       ),
@@ -306,6 +390,63 @@ class _AssistantPageState extends State<AssistantPage> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.location_on),
               ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    final address = StorageService.getHomeAddress();
+
+                    if (address == null || address.trim().isEmpty) {
+                      saveFrequentDestination(
+                        'Casa',
+                        StorageService.saveHomeAddress,
+                      );
+                    } else {
+                      useFrequentDestination(address, 'Casa');
+                    }
+                  },
+                  icon: const Icon(Icons.home),
+                  label: const Text('Casa'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    final address = StorageService.getWorkAddress();
+
+                    if (address == null || address.trim().isEmpty) {
+                      saveFrequentDestination(
+                        'Trabalho',
+                        StorageService.saveWorkAddress,
+                      );
+                    } else {
+                      useFrequentDestination(address, 'Trabalho');
+                    }
+                  },
+                  icon: const Icon(Icons.work),
+                  label: const Text('Trabalho'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    final address = StorageService.getCollegeAddress();
+
+                    if (address == null || address.trim().isEmpty) {
+                      saveFrequentDestination(
+                        'Faculdade',
+                        StorageService.saveCollegeAddress,
+                      );
+                    } else {
+                      useFrequentDestination(address, 'Faculdade');
+                    }
+                  },
+                  icon: const Icon(Icons.school),
+                  label: const Text('Faculdade'),
+                ),
+              ],
             ),
 
             const SizedBox(height: 12),

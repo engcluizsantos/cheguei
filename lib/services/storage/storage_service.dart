@@ -5,6 +5,10 @@ class StorageService {
   static const String _boxName = 'cheguei_box';
   static const String _userKey = 'user';
   static const String _favoritesKey = 'favorites';
+  static const String _historyKey = 'history';
+  static const String _homeAddressKey = 'home_address';
+  static const String _workAddressKey = 'work_address';
+  static const String _collegeAddressKey = 'college_address';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -62,5 +66,47 @@ class StorageService {
     favorites.remove(destination);
 
     await _box.put(_favoritesKey, favorites);
+  }
+
+  static List<String> getHistory() {
+    final data = _box.get(_historyKey);
+
+    if (data == null) {
+      return [];
+    }
+
+    return List<String>.from(data);
+  }
+
+  static Future<void> saveHistory(String destination) async {
+    final history = getHistory();
+
+    history.insert(0, destination);
+
+    await _box.put(_historyKey, history);
+  }
+
+  static Future<void> saveHomeAddress(String address) async {
+    await _box.put(_homeAddressKey, address);
+  }
+
+  static String? getHomeAddress() {
+    return _box.get(_homeAddressKey) as String?;
+  }
+
+  static Future<void> saveWorkAddress(String address) async {
+    await _box.put(_workAddressKey, address);
+  }
+
+  static String? getWorkAddress() {
+    return _box.get(_workAddressKey) as String?;
+  }
+
+  static Future<void> saveCollegeAddress(String address) async {
+    await _box.put(_collegeAddressKey, address);
+  }
+
+  static String? getCollegeAddress() {
+    return _box.get(_collegeAddressKey) as String?;
   }
 }
