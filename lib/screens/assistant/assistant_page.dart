@@ -8,7 +8,6 @@ import 'package:cheguei/services/weather/weather_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cheguei/services/storage/storage_service.dart';
 import 'package:go_router/go_router.dart';
-//import 'package:animated_text_kit/animated_text_kit.dart';
 
 // O AssistantPage é um StatefulWidget, isso significa que ele precisa atualizar as informações
 // dinamicamente (localização, clima, rota).
@@ -35,8 +34,7 @@ class _AssistantPageState extends State<AssistantPage> {
 
   String locationMessage = '';
 
-  String assistantMessage =
-      'Olá! Eu sou o Gui.\n\nPara onde você deseja ir hoje?';
+  String assistantMessage = '';
 
   String recommendedTransport = '';
   String recommendedEmoji = '';
@@ -237,21 +235,54 @@ class _AssistantPageState extends State<AssistantPage> {
             ),
           ),
           actions: [
-            TextButton(
+            IconButton(
               onPressed: () {
-                Navigator.pop(context);
+                context.push('/profile');
               },
-              child: const Text('Cancelar'),
+              icon: const Icon(Icons.person_outline),
+              tooltip: 'Perfil',
             ),
-            ElevatedButton(
-              onPressed: () {
-                final value = controller.text.trim();
-
-                if (value.isNotEmpty) {
-                  Navigator.pop(context, value);
+            PopupMenuButton<String>(
+              tooltip: 'Mais opções',
+              onSelected: (value) {
+                switch (value) {
+                  case 'home':
+                    context.push('/home');
+                    break;
+                  case 'favorites':
+                    context.push('/favorites');
+                    break;
+                  case 'history':
+                    context.push('/history');
+                    break;
                 }
               },
-              child: const Text('Salvar'),
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'home',
+                  child: ListTile(
+                    leading: Icon(Icons.home_outlined),
+                    title: Text('Home'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'favorites',
+                  child: ListTile(
+                    leading: Icon(Icons.star_outline),
+                    title: Text('Favoritos'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'history',
+                  child: ListTile(
+                    leading: Icon(Icons.history),
+                    title: Text('Histórico'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -271,6 +302,28 @@ class _AssistantPageState extends State<AssistantPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('$label salvo com sucesso.')));
+  }
+
+  String getTransportIcon(String transport) {
+    switch (transport) {
+      case 'Caminhada':
+        return 'assets/icons/pessoa.png';
+
+      case 'Bicicleta':
+        return 'assets/icons/bike.png';
+
+      case 'Ônibus':
+        return 'assets/icons/onibus.png';
+
+      case 'Metrô':
+        return 'assets/icons/metro.png';
+
+      case 'Carro':
+        return 'assets/icons/carro.png';
+
+      default:
+        return 'assets/icons/pessoa.png';
+    }
   }
 
   @override
@@ -327,56 +380,93 @@ class _AssistantPageState extends State<AssistantPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Image.asset(
-                'assets/images/assistant.png',
-                width: 200,
-                height: 200,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.shade50,
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/images/assistant.png',
+                    width: 160,
+                    height: 160,
+                  ),
+                  const SizedBox(height: 12),
 
-            const SizedBox(height: 10),
+                  const Text(
+                    'Olá, eu sou o Gui!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
 
-            const Center(
-              child: Text(
-                'Assistente Cheguei',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-              ),
-            ),
+                  const SizedBox(height: 8),
 
-            const SizedBox(height: 12),
-
-            const Center(
-              child: Text(
-                'Vou ajudá-lo a encontrar a melhor forma de chegar ao seu destino.',
-                textAlign: TextAlign.center,
+                  const Text(
+                    'Vou ajudá-lo a encontrar a melhor forma de chegar ao seu destino.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 15, height: 1.4),
+                  ),
+                ],
               ),
             ),
 
             const SizedBox(height: 40),
 
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.my_location),
-                title: const Text('Sua localização'),
-                subtitle: loadingLocation
-                    ? const Text('📡 Localizando...')
-                    : Text(currentAddress),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFEDE7F6),
+                    child: Icon(Icons.my_location, color: Colors.deepPurple),
+                  ),
+                  title: const Text(
+                    'Sua localização',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: loadingLocation
+                      ? const Text('📡 Localizando...')
+                      : Text(currentAddress),
+                ),
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
 
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.cloud),
-                title: const Text('Clima Atual'),
-                subtitle: currentWeather == null
-                    ? const Text('Não disponível')
-                    : Text(
-                        '${currentWeather!.temperature.toStringAsFixed(1)}°C\n'
-                        '${currentWeather!.isRaining ? "🌧️ Chovendo" : "☀️ Sem chuva"}',
-                      ),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFEDE7F6),
+                    child: Icon(Icons.cloud, color: Colors.deepPurple),
+                  ),
+                  title: const Text(
+                    'Clima atual',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: currentWeather == null
+                      ? const Text('Não disponível')
+                      : Text(
+                          '${currentWeather!.temperature.toStringAsFixed(1)}°C\n'
+                          '${currentWeather!.isRaining ? "🌧️ Chovendo" : "☀️ Sem chuva"}',
+                        ),
+                ),
               ),
             ),
 
@@ -395,10 +485,21 @@ class _AssistantPageState extends State<AssistantPage> {
             const SizedBox(height: 16),
 
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 10,
+              runSpacing: 10,
               children: [
                 OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.deepPurple,
+                    side: const BorderSide(color: Colors.deepPurple),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                   onPressed: () {
                     final address = StorageService.getHomeAddress();
 
@@ -415,6 +516,17 @@ class _AssistantPageState extends State<AssistantPage> {
                   label: const Text('Casa'),
                 ),
                 OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.deepPurple,
+                    side: const BorderSide(color: Colors.deepPurple),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                   onPressed: () {
                     final address = StorageService.getWorkAddress();
 
@@ -431,6 +543,17 @@ class _AssistantPageState extends State<AssistantPage> {
                   label: const Text('Trabalho'),
                 ),
                 OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.deepPurple,
+                    side: const BorderSide(color: Colors.deepPurple),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                   onPressed: () {
                     final address = StorageService.getCollegeAddress();
 
@@ -451,48 +574,77 @@ class _AssistantPageState extends State<AssistantPage> {
 
             const SizedBox(height: 12),
 
-            ElevatedButton.icon(
-              onPressed: () {
-                if (destinationController.text.trim().isNotEmpty) {
-                  openGoogleMaps(destinationController.text);
-                }
-              },
-              icon: const Icon(Icons.map),
-              label: const Text('Ver no Google Maps'),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () {
+                  if (destinationController.text.trim().isNotEmpty) {
+                    openGoogleMaps(destinationController.text);
+                  }
+                },
+                icon: const Icon(Icons.map_outlined),
+                label: const Text('Ver no Google Maps'),
+              ),
             ),
 
             const SizedBox(height: 12),
 
-            ElevatedButton.icon(
-              onPressed: () async {
-                final destination = destinationController.text.trim();
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () async {
+                  final destination = destinationController.text.trim();
 
-                if (destination.isNotEmpty) {
-                  await StorageService.saveFavorite(destination);
+                  if (destination.isNotEmpty) {
+                    await StorageService.saveFavorite(destination);
 
-                  if (!mounted) return;
+                    if (!mounted) return;
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Destino adicionado aos favoritos.'),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.star),
-              label: const Text('Adicionar aos favoritos'),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Destino adicionado aos favoritos.'),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.star_outline),
+                label: const Text('Adicionar aos favoritos'),
+              ),
             ),
-
             const SizedBox(height: 30),
 
             SizedBox(
               width: double.infinity,
-              height: 55,
+              height: 56,
               child: ElevatedButton.icon(
-                //onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
                 onPressed: findRoute,
-                icon: const Icon(Icons.search),
-                label: const Text('Encontrar melhor rota'),
+                icon: const Icon(Icons.route),
+                label: const Text(
+                  'Encontrar melhor rota',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
 
@@ -503,82 +655,66 @@ class _AssistantPageState extends State<AssistantPage> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    const Icon(Icons.smart_toy, size: 50),
-
                     const SizedBox(height: 16),
 
                     if (recommendedTransport.isNotEmpty)
-                      Card(
-                        elevation: 4,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              const Text(
-                                'Melhor opção encontrada',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.deepPurple.shade100),
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              getTransportIcon(recommendedTransport),
+                              width: 52,
+                              height: 52,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Melhor opção encontrada',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    recommendedTransport,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.deepPurple,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                recommendedEmoji,
-                                style: const TextStyle(fontSize: 40),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                recommendedTransport,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-
                     const SizedBox(height: 20),
 
-                    // ANIMA A SAUDAÇÃO DO ASSISTENTE
-
-                    /*
-                    AnimatedTextKit(
-                      animatedTexts: [
-                        TypewriterAnimatedText(
-                          assistantMessage,
-                          textStyle: const TextStyle(fontSize: 16, height: 1.5),
-                          speed: const Duration(milliseconds: 80),
-                        ),
-                      ],
-                      totalRepeatCount: 1, // só uma vez
-                      pause: const Duration(milliseconds: 500),
-                      displayFullTextOnTap:
-                          true, // mostra tudo se o usuário tocar
-                      stopPauseOnTap: true,
-                    ),
-                    */
-
-                    /*
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 600),
-                      transitionBuilder:
-                          (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       child: Text(
                         assistantMessage,
-                        key: ValueKey<String>(assistantMessage),
                         textAlign: TextAlign.left,
                         style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
-                    ),
-                    */
-                    Text(
-                      assistantMessage,
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(fontSize: 16, height: 1.5),
                     ),
                   ],
                 ),
