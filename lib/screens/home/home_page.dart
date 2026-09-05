@@ -40,6 +40,8 @@ class _HomePageState extends State<HomePage> {
   double? destinationLatitude;
   double? destinationLongitude;
 
+  final MapController mapController = MapController();
+
   double distanceKm = 0;
 
   List<SpTransStopModel> nearbyStops = [];
@@ -80,6 +82,22 @@ class _HomePageState extends State<HomePage> {
         const SnackBar(content: Text('Informe a origem e o destino.')),
       );
       return;
+    }
+
+    if (destinationLatitude != null &&
+        destinationLongitude != null &&
+        latitude != null &&
+        longitude != null) {
+      mapController.fitCamera(
+        CameraFit.coordinates(
+          coordinates: [
+            LatLng(latitude!, longitude!),
+            LatLng(destinationLatitude!, destinationLongitude!),
+          ],
+          padding: const EdgeInsets.all(40),
+          maxZoom: 16,
+        ),
+      );
     }
 
     final destinationLocations = await locationFromAddress(destination);
@@ -337,9 +355,25 @@ class _HomePageState extends State<HomePage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: FlutterMap(
+                      mapController: mapController,
                       options: MapOptions(
                         initialCenter: LatLng(latitude!, longitude!),
                         initialZoom: 15,
+                        initialCameraFit:
+                            destinationLatitude != null &&
+                                destinationLongitude != null
+                            ? CameraFit.coordinates(
+                                coordinates: [
+                                  LatLng(latitude!, longitude!),
+                                  LatLng(
+                                    destinationLatitude!,
+                                    destinationLongitude!,
+                                  ),
+                                ],
+                                padding: const EdgeInsets.all(40),
+                                maxZoom: 16,
+                              )
+                            : null,
                       ),
                       children: [
                         TileLayer(

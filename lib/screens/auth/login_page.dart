@@ -5,6 +5,7 @@ import 'package:cheguei/core/widgets/cheguei_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cheguei/services/storage/storage_service.dart';
+import 'package:cheguei/services/auth/biometric_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,6 +17,49 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  Future<void> loginWithBiometrics() async {
+    final user = StorageService.getUser();
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nenhum usuário cadastrado.')),
+      );
+      return;
+    }
+
+    final canAuthenticate = await BiometricService.canAuthenticate();
+
+    if (!canAuthenticate) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Biometria não disponível neste dispositivo.'),
+        ),
+      );
+      return;
+    }
+
+    final authenticated = await BiometricService.authenticate();
+
+    if (!mounted) return;
+
+    if (!authenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível autenticar pela biometria.'),
+        ),
+      );
+      return;
+    }
+
+    if (user.firstAccess) {
+      context.go(AppRoutes.profile);
+    } else {
+      context.go(AppRoutes.assistant);
+    }
+  }
 
   @override
   void dispose() {
@@ -111,6 +155,14 @@ class _LoginPageState extends State<LoginPage> {
                         context.go(AppRoutes.home);
                       }
                     },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  OutlinedButton.icon(
+                    onPressed: loginWithBiometrics,
+                    icon: const Icon(Icons.fingerprint),
+                    label: const Text('Entrar com biometria'),
                   ),
 
                   const SizedBox(height: 16),

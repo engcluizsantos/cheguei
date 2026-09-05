@@ -224,7 +224,7 @@ class _AssistantPageState extends State<AssistantPage> {
 
     final address = await showDialog<String>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: Text('Cadastrar $label'),
           content: TextField(
@@ -235,54 +235,21 @@ class _AssistantPageState extends State<AssistantPage> {
             ),
           ),
           actions: [
-            IconButton(
+            TextButton(
               onPressed: () {
-                context.push('/profile');
+                Navigator.pop(dialogContext);
               },
-              icon: const Icon(Icons.person_outline),
-              tooltip: 'Perfil',
+              child: const Text('Cancelar'),
             ),
-            PopupMenuButton<String>(
-              tooltip: 'Mais opções',
-              onSelected: (value) {
-                switch (value) {
-                  case 'home':
-                    context.push('/home');
-                    break;
-                  case 'favorites':
-                    context.push('/favorites');
-                    break;
-                  case 'history':
-                    context.push('/history');
-                    break;
+            ElevatedButton(
+              onPressed: () {
+                final value = controller.text.trim();
+
+                if (value.isNotEmpty) {
+                  Navigator.pop(dialogContext, value);
                 }
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: 'home',
-                  child: ListTile(
-                    leading: Icon(Icons.home_outlined),
-                    title: Text('Home'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'favorites',
-                  child: ListTile(
-                    leading: Icon(Icons.star_outline),
-                    title: Text('Favoritos'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'history',
-                  child: ListTile(
-                    leading: Icon(Icons.history),
-                    title: Text('Histórico'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ],
+              child: const Text('Salvar'),
             ),
           ],
         );

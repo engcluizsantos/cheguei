@@ -62,9 +62,6 @@ ${nearbyStations.take(3).map((station) => '${station.name} (${station.line})').j
 
     final int busLinesFound = busLines.length;
 
-    print('🎯 Destino: $destination');
-    print('🚌 Linhas encontradas: $busLinesFound');
-
     String busLinesMessage = '';
 
     if (busLines.isNotEmpty) {
@@ -82,10 +79,6 @@ ${nearbyStations.take(3).map((station) => '${station.name} (${station.line})').j
     final metroStatus = metroLines
         .map((line) => '🚇 ${line.line}: ${line.status}')
         .join('\n');
-
-    // TESTE
-
-    print('🚌 busLinesFound: $busLinesFound');
 
     bool hasStrongBusCoverage = false;
 

@@ -126,13 +126,6 @@ class RecommendationService {
       ),
     );
 
-    print('🚶 Caminhada: $walkScore');
-    print('🚲 Bicicleta: $bikeScore');
-    print('🚌 Ônibus: $busScore');
-    print('🚇 Metro: $metroScore');
-    print('🚗 Carro: $carScore');
-    print('🚌 hasNearbyBusStop: $hasNearbyBusStop');
-
     recommendations.sort((a, b) => b.score.compareTo(a.score));
 
     final best = recommendations.first;
