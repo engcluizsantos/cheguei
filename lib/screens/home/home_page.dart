@@ -84,22 +84,6 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    if (destinationLatitude != null &&
-        destinationLongitude != null &&
-        latitude != null &&
-        longitude != null) {
-      mapController.fitCamera(
-        CameraFit.coordinates(
-          coordinates: [
-            LatLng(latitude!, longitude!),
-            LatLng(destinationLatitude!, destinationLongitude!),
-          ],
-          padding: const EdgeInsets.all(40),
-          maxZoom: 16,
-        ),
-      );
-    }
-
     final destinationLocations = await locationFromAddress(destination);
 
     if (destinationLocations.isNotEmpty) {
@@ -140,6 +124,24 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {});
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (destinationLatitude != null &&
+          destinationLongitude != null &&
+          latitude != null &&
+          longitude != null) {
+        mapController.fitCamera(
+          CameraFit.coordinates(
+            coordinates: [
+              LatLng(latitude!, longitude!),
+              LatLng(destinationLatitude!, destinationLongitude!),
+            ],
+            padding: const EdgeInsets.all(50),
+            maxZoom: 16,
+          ),
+        );
+      }
+    });
   }
 
   void loadRecommendations() {
