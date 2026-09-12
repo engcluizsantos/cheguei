@@ -1,5 +1,6 @@
 import 'package:cheguei/models/user_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cheguei/models/travel_routine_model.dart';
 
 class StorageService {
   static const String _boxName = 'cheguei_box';
@@ -9,6 +10,7 @@ class StorageService {
   static const String _homeAddressKey = 'home_address';
   static const String _workAddressKey = 'work_address';
   static const String _collegeAddressKey = 'college_address';
+  static const String _travelRoutinesKey = 'travel_routines';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -108,5 +110,41 @@ class StorageService {
 
   static String? getCollegeAddress() {
     return _box.get(_collegeAddressKey) as String?;
+  }
+
+  static List<TravelRoutineModel> getTravelRoutines() {
+    final data = _box.get(_travelRoutinesKey);
+
+    if (data == null) {
+      return [];
+    }
+
+    final routines = List<dynamic>.from(data);
+
+    return routines
+        .map(
+          (item) =>
+              TravelRoutineModel.fromMap(Map<dynamic, dynamic>.from(item)),
+        )
+        .toList();
+  }
+
+  static Future<void> saveTravelRoutine(TravelRoutineModel routine) async {
+    final routines = getTravelRoutines();
+
+    final existingIndex = routines.indexWhere(
+      (item) => item.name == routine.name,
+    );
+
+    if (existingIndex >= 0) {
+      routines[existingIndex] = routine;
+    } else {
+      routines.add(routine);
+    }
+
+    await _box.put(
+      _travelRoutinesKey,
+      routines.map((item) => item.toMap()).toList(),
+    );
   }
 }

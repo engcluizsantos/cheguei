@@ -8,6 +8,7 @@ import 'package:cheguei/services/weather/weather_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cheguei/services/storage/storage_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cheguei/services/notifications/notification_service.dart';
 
 // O AssistantPage é um StatefulWidget, isso significa que ele precisa atualizar as informações
 // dinamicamente (localização, clima, rota).
@@ -312,6 +313,23 @@ class _AssistantPageState extends State<AssistantPage> {
         title: const Text('Assistente Inteligente'),
         centerTitle: true,
         actions: [
+          // BOTAO PARA TESTAR NOTIFICAÇÃO-------------------------------------------
+          IconButton(
+            onPressed: () async {
+              await NotificationService.scheduleTestNotification();
+            },
+            icon: const Icon(Icons.notifications_active),
+            tooltip: 'Agendar notificação de teste',
+          ),
+
+          IconButton(
+            onPressed: () {
+              context.push('/routine');
+            },
+            icon: const Icon(Icons.alarm),
+            tooltip: 'Rotinas',
+          ),
+
           IconButton(
             onPressed: () {
               context.push('/profile');

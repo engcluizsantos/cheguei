@@ -6,7 +6,6 @@ import 'package:cheguei/services/metro/metro_service.dart';
 import 'package:cheguei/models/assistant_response.dart';
 import 'package:cheguei/services/sptrans/sptrans_service.dart';
 import 'package:cheguei/services/metro/metro_station_service.dart';
-//import 'package:url_launcher/url_launcher.dart';
 
 class AssistantService {
   static Future<AssistantResponse> analyze({

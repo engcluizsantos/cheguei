@@ -7,6 +7,7 @@ import 'package:cheguei/screens/home/home_page.dart';
 import 'package:cheguei/screens/assistant/assistant_page.dart';
 import 'package:cheguei/screens/favorites/favorites_page.dart';
 import 'package:cheguei/screens/history/history_page.dart';
+import 'package:cheguei/screens/routine/routine_page.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -22,6 +23,7 @@ class AppRoutes {
   static const favorites = '/favorites';
   static const settings = '/settings';
   static const assistant = '/assistant';
+  static const routine = '/routine';
 }
 
 class AppRouter {
@@ -68,6 +70,11 @@ class AppRouter {
       GoRoute(
         path: '/history',
         builder: (context, state) => const HistoryPage(),
+      ),
+
+      GoRoute(
+        path: AppRoutes.routine,
+        builder: (context, state) => const RoutinePage(),
       ),
     ],
   );
