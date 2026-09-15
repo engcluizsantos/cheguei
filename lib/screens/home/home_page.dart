@@ -252,6 +252,15 @@ class _HomePageState extends State<HomePage> {
 
               const SizedBox(height: 12),
 
+              const SizedBox(height: 12),
+
+              // TESTAR SPTRANS
+              ElevatedButton.icon(
+                onPressed: testSpTrans,
+                icon: const Icon(Icons.directions_bus),
+                label: const Text('Testar SPTrans'),
+              ),
+
               OutlinedButton.icon(
                 onPressed: () {
                   context.push(AppRoutes.assistant);
@@ -504,20 +513,35 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final lines = await SpTransService.searchLines('8000');
+    final stops = await SpTransService.searchStops('Paulista');
 
-    if (!mounted) return;
+    debugPrint('=== TESTE PARADAS SPTRANS ===');
+    debugPrint('Quantidade encontrada: ${stops.length}');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('SPTrans conectada! Linhas encontradas: ${lines.length}'),
-      ),
-    );
+    for (final stop in stops.take(5)) {
+      debugPrint('ID: ${stop.id}');
+      debugPrint('Nome: ${stop.name}');
+      debugPrint('Endereço: ${stop.address}');
+      debugPrint('Latitude: ${stop.latitude}');
+      debugPrint('Longitude: ${stop.longitude}');
+      debugPrint('-----------------------------');
+    }
 
-    if (lines.isNotEmpty) {
-      debugPrint('Linha: ${lines.first.code}');
-      debugPrint('Origem: ${lines.first.origin}');
-      debugPrint('Destino: ${lines.first.destination}');
+    if (stops.isNotEmpty) {
+      final forecasts = await SpTransService.getForecastsByStop(stops.first.id);
+
+      debugPrint('=== PREVISÕES PROCESSADAS ===');
+      debugPrint('Quantidade de linhas: ${forecasts.length}');
+
+      for (final forecast in forecasts.take(5)) {
+        debugPrint('Linha: ${forecast.lineCode}');
+        debugPrint('Origem: ${forecast.origin}');
+        debugPrint('Destino: ${forecast.destination}');
+        debugPrint('Chegada prevista: ${forecast.arrivalTime}');
+        debugPrint('Acessível: ${forecast.accessible}');
+        debugPrint('Veículos monitorados: ${forecast.vehicleCount}');
+        debugPrint('-----------------------------');
+      }
     }
   }
 }
