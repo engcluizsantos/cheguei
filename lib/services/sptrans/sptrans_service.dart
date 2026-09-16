@@ -114,7 +114,10 @@ class SpTransService {
       debugPrint('Body BuscarParadas: ${response.body}');
 
       if (response.statusCode != 200) {
-        return [];
+        throw Exception(
+          'Falha ao consultar paradas da SPTrans. '
+          'Status: ${response.statusCode}',
+        );
       }
 
       final List data = jsonDecode(response.body);
@@ -123,7 +126,7 @@ class SpTransService {
     } catch (e, s) {
       debugPrint('ERRO searchStops: $e');
       debugPrint('$s');
-      return [];
+      rethrow;
     }
   }
 
@@ -177,7 +180,10 @@ class SpTransService {
       debugPrint('Body PrevisaoParada: ${response.body}');
 
       if (response.statusCode != 200) {
-        return null;
+        throw Exception(
+          'Falha ao consultar previsões da SPTrans. '
+          'Status: ${response.statusCode}',
+        );
       }
 
       final dynamic data = jsonDecode(response.body);
@@ -190,8 +196,7 @@ class SpTransService {
     } catch (e, s) {
       debugPrint('ERRO getForecastByStop: $e');
       debugPrint('$s');
-
-      return null;
+      rethrow;
     }
   }
 

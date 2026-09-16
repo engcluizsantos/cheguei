@@ -154,6 +154,7 @@ class _HomePageState extends State<HomePage> {
       user: user,
       hasNearbyBusStop: nearbyStops.isNotEmpty,
       hasStrongBusCoverage: false,
+      busLinesFound: 0,
       metroStationsFound: 0,
       isRaining: false,
     );

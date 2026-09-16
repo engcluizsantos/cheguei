@@ -7,6 +7,7 @@ class RecommendationService {
     required UserModel user,
     required bool hasNearbyBusStop,
     required bool hasStrongBusCoverage,
+    required int busLinesFound,
     required int metroStationsFound,
     required bool isRaining,
   }) {
@@ -33,6 +34,12 @@ class RecommendationService {
 
     if (hasStrongBusCoverage) {
       busScore += 25;
+    }
+
+    if (busLinesFound > 0) {
+      busScore += 20;
+    } else {
+      busScore -= 30;
     }
 
     if (distanceKm > 5) {

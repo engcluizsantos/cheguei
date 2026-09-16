@@ -6,6 +6,7 @@ import 'package:cheguei/services/metro/metro_service.dart';
 import 'package:cheguei/models/assistant_response.dart';
 import 'package:cheguei/services/sptrans/sptrans_service.dart';
 import 'package:cheguei/services/metro/metro_station_service.dart';
+import 'package:cheguei/core/constants/sptrans_constants.dart';
 
 class AssistantService {
   static Future<AssistantResponse> analyze({
@@ -57,22 +58,58 @@ class AssistantService {
 ${nearbyStations.take(3).map((station) => '${station.name} (${station.line})').join('\n')}
 ''';
 
-    final busLines = await SpTransService.searchLines(destination);
-
-    final int busLinesFound = busLines.length;
+    int busLinesFound = 0;
 
     String busLinesMessage = '';
 
-    if (busLines.isNotEmpty) {
-      final topLines = busLines.take(3);
+    try {
+      final authenticated = await SpTransService.authenticate(
+        SpTransConstants.apiKey,
+      );
 
-      busLinesMessage = topLines
-          .map((line) {
-            return '• ${line.code} - ${line.origin} → ${line.destination}';
-          })
-          .join('\n');
-    } else {
-      busLinesMessage = 'Nenhuma linha encontrada.';
+      if (!authenticated) {
+        throw Exception('Falha na autenticação da SPTrans.');
+      }
+
+      final busStops = await SpTransService.searchStops(destination);
+
+      if (busStops.isNotEmpty) {
+        final forecasts = await SpTransService.getForecastsByStop(
+          busStops.first.id,
+        );
+
+        busLinesFound = forecasts.length;
+
+        if (forecasts.isNotEmpty) {
+          final topForecasts = forecasts.take(3);
+
+          busLinesMessage = topForecasts
+              .map((forecast) {
+                final accessibility = forecast.accessible
+                    ? '♿ Acessível'
+                    : 'Não acessível';
+
+                return '• ${forecast.lineCode} - '
+                    '${forecast.origin} → ${forecast.destination}\n'
+                    '  Chegada prevista: ${forecast.arrivalTime} | '
+                    '$accessibility';
+              })
+              .join('\n');
+        } else {
+          busLinesMessage =
+              'Nenhuma previsão de ônibus disponível para esta parada.';
+        }
+      } else {
+        busLinesMessage =
+            'Não identifiquei cobertura de ônibus da SPTrans para este destino. '
+            'Vou considerar as demais opções de transporte disponíveis.';
+      }
+    } catch (e) {
+      busLinesFound = 0;
+
+      busLinesMessage =
+          'Não foi possível consultar a SPTrans neste momento. '
+          'Vou considerar as demais opções de transporte disponíveis.';
     }
 
     final metroStatus = metroLines
@@ -96,6 +133,7 @@ ${nearbyStations.take(3).map((station) => '${station.name} (${station.line})').j
           user: user,
           hasNearbyBusStop: busLinesFound > 0,
           hasStrongBusCoverage: hasStrongBusCoverage,
+          busLinesFound: busLinesFound,
           metroStationsFound: metroStationsFound,
           isRaining: isRaining,
         );
